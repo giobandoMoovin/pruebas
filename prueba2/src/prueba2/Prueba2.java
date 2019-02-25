@@ -31,21 +31,11 @@ public class Prueba2 {
         String fileURL = "";
 //        Connection connection = this.connector.getConnection();
         String[] headers = new String[]{
-            "FECHA",
-            "CEDULA",
-            "NOMBRE",
-            "TELEFONO",
-            "# PEDIDO SIEBEL",
-            "TIPO DE PLAN",
-            "VALIDACION DE PLAN", 
-            "CANAL",
-            "REALIZADO POR",
-            "CONFIRMACION",
-            "META DE MES",
-            "REBAJA ICE",
-            "MONTO DE PLAN",
-            "% COMISION",
-            "MONTO COMISION"
+            "FECHA",                "CEDULA",           "NOMBRE",
+            "TELEFONO",             "# PEDIDO SIEBEL",  "TIPO DE PLAN", 
+            "VALIDACION DE PLAN",   "CANAL",            "REALIZADO POR", 
+            "CONFIRMACION",         "META DE MES",      "REBAJA ICE",       
+            "MONTO DE PLAN",        "% COMISION",       "MONTO COMISION"
         };
         
         ArrayList<ArrayList> dataInfo = new ArrayList<ArrayList>();

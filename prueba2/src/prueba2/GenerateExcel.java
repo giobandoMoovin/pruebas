@@ -67,19 +67,7 @@ public class GenerateExcel {
             } else {
                 //key = keyProduction;
                 production = false;
-            }
-
-            /*int indexDeveloper = Name.indexOf("developer");
-                if (indexDeveloper != -1) {
-                    key = keyDeveloper;
-
-                    //key = keyDeveloper;
-                } else {
-                    //key = keyProduction;
-                    key = keyProduction;
-                }*/
-            //ably = new AblyRealtime(key);
-            // PrintLog.Print("URL: " + production);
+            } 
         } catch (UnknownHostException ex) {
             production = true;
         }
@@ -92,12 +80,19 @@ public class GenerateExcel {
         System.out.println("entro a crear el excel");
         int positionHeader = 0;
         int initialPosititionData = positionHeader + 1;
+        String[] headerBD = headers;
+        
+        String[] headerSIEBEL = new String[]{ "FechaSiebel", "Cedula", "Nombre",
+                                            "Telefono", "# PEDIDO SIEBEL", "TIPO DE PLAN",
+                                            "Validacion DE PLAN", "Canal", "Realizado POR",
+                                            "Confirmacion", "META DE MES", "REBAJA ICE",
+                                            "MONTO DE PLAN", "% COMISION", "MONTO COMISION"
+                                            };
         
         try {
             // --------------------- instancia de excel --------------------- 
             HSSFWorkbook workbook = new HSSFWorkbook();         // Libros 
-            HSSFSheet sheet ; 
-            HSSFSheet sheet2 ; 
+            HSSFSheet sheet, sheet2, sheet3 ;  
            
             // ------------------- estilo del encabezado -------------------
             CellStyle headerStyle = workbook.createCellStyle();
@@ -105,10 +100,11 @@ public class GenerateExcel {
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             headerStyle.setAlignment(HorizontalAlignment.CENTER);
             
-            sheet = createSheeBD(workbook, headerStyle, headers, dataInfo, "Siebel");
-            sheet2 = createSheeBD(workbook, headerStyle, headers, dataInfo, "BD"); 
+            sheet =  createSheetSiebel( workbook, headerStyle, headerSIEBEL,  dataInfo, "Siebel");
+            sheet2 = createSheetBD(     workbook, headerStyle, headerBD,      dataInfo, "BD"); 
+            sheet3 = createSheetPrueba( workbook, headerStyle, headers,       dataInfo, "Prueba);
 
-
+            // ------------------- se almacena archivo excel -------------------
             Date date = new Date();
             String nameReportSave = nameReport + "-" + dateFormat.format(date) + ".xls";
             fileURL += nameReportSave;
@@ -130,9 +126,9 @@ public class GenerateExcel {
         return fileURL;
     }
       
-    public HSSFSheet createSheeBD(HSSFWorkbook pWorkbook, CellStyle pHeaderStyle, String[] headers, ArrayList<ArrayList> dataInfo, String Sheetname){
+    public HSSFSheet createSheetBD(HSSFWorkbook pWorkbook, CellStyle pHeaderStyle, String[] headers, ArrayList<ArrayList> dataInfo, String pSheetname){
         HSSFSheet sheet = pWorkbook.createSheet(); 
-        pWorkbook.setSheetName(0, "Sheetname");                 // nombres de hojas
+        pWorkbook.setSheetName(1, pSheetname);                 // nombres de hojas
         int positionHeader = 0 ;
         int initialPosititionData = positionHeader + 1;
          
@@ -141,9 +137,8 @@ public class GenerateExcel {
         font.setBold(true);
         pHeaderStyle.setFont(font);
         
-        // ----------------- ANADIMOS DATOS AL HEADER ----------------------
-        // se crea una fila en la hoja en la posicion 0.
-        HSSFRow headerRow = sheet.createRow(positionHeader); 
+        // ----------------- ANADIMOS DATOS AL HEADER ---------------------- 
+        HSSFRow headerRow = sheet.createRow(positionHeader);  // se crea una fila en la hoja en la posicion 0.
         // creamos el encabezado
         for (int i = 0; i < headers.length; ++i) {
             String header = headers[i];
@@ -152,8 +147,7 @@ public class GenerateExcel {
             // le aplicamos el estilo
             cell.setCellStyle(pHeaderStyle);
             cell.setCellValue(header);
-        }
-         System.out.println("entro a crear el excel 11");
+        } 
         
         for (int i = 0; i < dataInfo.size(); ++i) { 
                 ArrayList<String> row = dataInfo.get(i); 
@@ -185,11 +179,112 @@ public class GenerateExcel {
                          default: 
                             dataRow.createCell(j).setCellValue(row.get(j));  
                             break; 
-                    } 
-                    // auto ajustador de columnas
-                    sheet.autoSizeColumn(j); 
+                    }  
+                    sheet.autoSizeColumn(j);        // auto ajustador de columnas
                 }   
             } 
         return sheet; 
-    }  
+    } 
+    
+    public HSSFSheet createSheetSiebel(HSSFWorkbook pWorkbook, CellStyle pHeaderStyle, String[] headers, ArrayList<ArrayList> dataInfo, String pSheetname){
+        HSSFSheet sheet = pWorkbook.createSheet(); 
+        pWorkbook.setSheetName(0, pSheetname);                 // nombres de hojas
+        int positionHeader = 0 ;
+        int initialPosititionData = positionHeader + 1; 
+        Font font = pWorkbook.createFont();                     // Estilos  
+        font.setBold(true);
+        pHeaderStyle.setFont(font);
+        
+        // ----------------- ANADIMOS DATOS AL HEADER ---------------------- 
+        HSSFRow headerRow = sheet.createRow(positionHeader);    // se crea una fila en la hoja en la posicion 0.
+        // creamos el encabezado
+        for (int i = 0; i < headers.length; ++i) {
+            String header = headers[i];
+            // creamos celda en la fila creada anterior en la posicion del for.
+            HSSFCell cell = headerRow.createCell(i); 
+            cell.setCellStyle(pHeaderStyle);                    // le aplicamos el estilo
+            cell.setCellValue(header);
+        } 
+        
+        for (int i = 0; i < dataInfo.size(); ++i) { 
+                ArrayList<String> row = dataInfo.get(i); 
+                // creamos una fila nueva para los datos anteriores.
+                HSSFRow dataRow = sheet.createRow(i + initialPosititionData );
+                String formula ;
+                System.out.print("tamano fila: "+ row.size());
+                for (int j = 0; j < row.size(); j++) { 
+                    int col = i+2 ; // donde inicia los datos a escribirse
+                    switch(j){
+//                        case 7:         // columna g: VALIDACION PLAN
+//                            formula = "BUSCARV(E:E;VALIDACION!A:B;2;FALSO)" ;
+//                            dataRow.createCell(j).setCellFormula( formula );  
+//                            break;
+//                        case 13:         // columna L: MONTO DE PLAN
+//                            formula = "BUSCARV(F:F;MONTOS!A:B;2;FALSO)" ;
+//                            dataRow.createCell(j).setCellFormula( formula );  
+//                            break;
+                        case 14:         // columna O: MONTO COMISION
+                            System.out.print("tamano comision: "+ row.get(j)); 
+                            formula = "(M"+col+ "-(M" +col+ "* L"+col+"/100 ) )* N"+col+ "/100"; //  =(H6-(H6*11,95%))*10% 
+                            System.out.println(formula);
+                            dataRow.createCell(j).setCellFormula(formula );  
+                            break; 
+                         default: 
+                            dataRow.createCell(j).setCellValue(row.get(j));  
+                            break; 
+                    }  
+                    sheet.autoSizeColumn(j);                    // auto ajustador de columnas
+                }   
+            } 
+        return sheet; 
+    }
+    
+    // Se comprueba que se puede realizar calculos con hojas vecinas del mismo libro
+    public HSSFSheet createSheetPrueba(HSSFWorkbook pWorkbook, CellStyle pHeaderStyle, String[] headers, ArrayList<ArrayList> dataInfo, String pSheetname){
+        HSSFSheet sheet = pWorkbook.createSheet(); 
+        pWorkbook.setSheetName(0, pSheetname);                 // nombres de hojas
+        int positionHeader = 0 ;
+        int initialPosititionData = positionHeader + 1; 
+        Font font = pWorkbook.createFont();                     // Estilos  
+        font.setBold(true);
+        pHeaderStyle.setFont(font);
+        
+        // ----------------- ANADIMOS DATOS AL HEADER ---------------------- 
+        HSSFRow headerRow = sheet.createRow(positionHeader);    // se crea una fila en la hoja en la posicion 0.
+        // creamos el encabezado
+        for (int i = 0; i < headers.length; ++i) {
+            String header = headers[i];
+            // creamos celda en la fila creada anterior en la posicion del for.
+            HSSFCell cell = headerRow.createCell(i); 
+            cell.setCellStyle(pHeaderStyle);                    // le aplicamos el estilo
+            cell.setCellValue(header);
+        } 
+        
+        for (int i = 0; i < dataInfo.size(); ++i) { 
+                ArrayList<String> row = dataInfo.get(i); 
+                // creamos una fila nueva para los datos anteriores.
+                HSSFRow dataRow = sheet.createRow(i + initialPosititionData );
+                String formula ;
+                System.out.print("tamano fila: "+ row.size());
+                for (int j = 0; j < row.size(); j++) { 
+                    int col = i+2 ; // donde inicia los datos a escribirse
+                    switch(j){ 
+                        case 10:         // columna O: MONTO COMISION
+                            System.out.print("tamano comision: "+ row.get(j)); 
+                            formula = "(M"+col+ "-(M" +col+ "* L"+col+"/100 ) )* N"+col+ "/100"; //  =(H6-(H6*11,95%))*10% 
+                            System.out.println(formula);
+                            dataRow.createCell(j).setCellFormula(formula );  
+                            break; 
+                         default: 
+                            dataRow.createCell(j).setCellValue(row.get(j));  
+                            break; 
+                    }  
+                    sheet.autoSizeColumn(j);                    // auto ajustador de columnas
+                }   
+            } 
+        return sheet; 
+    }
+    
+    
+    
 }
